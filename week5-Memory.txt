@@ -1,0 +1,80 @@
+# implementation of card game - Memory
+
+import simplegui
+import random
+
+# helper function to initialize globals
+cards = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8]
+exposed = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+state = 0
+clicked1 = 0
+clicked2 = 0
+Turns = 0
+def new_game ():
+    global state,Turns
+    state = 0
+    random.shuffle(cards)
+    for index in range(16):
+        exposed[index] = False
+    Turns = 0
+    label.set_text(Turns)
+
+     
+# define event handlers
+def mouseclick(pos):
+    # add game state logic here
+    global state,clicked1,clicked2,Turns
+    
+    if state == 0:
+        state = 1
+        clicked1 = pos[0]//50
+        exposed[clicked1] = True
+    elif state == 1:
+        if exposed[pos[0]//50] == True:
+            state = 1
+        else:
+            state = 2
+            clicked2 = pos[0]//50
+            exposed[clicked2] = True
+        Turns += 1
+    else:
+        if exposed[pos[0]//50] == True:
+            state = 2
+        else:
+            if cards[clicked1] != cards[clicked2]:
+                exposed[clicked1] = False
+                exposed[clicked2] = False
+            clicked1 = pos[0]//50
+            exposed[clicked1] = True
+            state = 1
+           
+    print exposed
+# cards are logically 50x100 pixels in size    
+def draw(canvas):
+    card_pos = 0
+    for card_index in range(len(cards)):
+        card_pos = 15 + 50 * card_index
+        if exposed[card_index]:
+            canvas.draw_text(str(cards[card_index]), (card_pos,75), 50, "Red")
+        canvas.draw_line((50*(card_index+1), 0), (50*(card_index+1), 100), 1, 'White')
+    label.set_text(Turns)
+
+
+# create frame and add a button and labels
+frame = simplegui.create_frame("Memory", 800, 100)
+frame.add_button("Reset", new_game)
+l = frame.add_label("Turns:")
+label = frame.add_label("Turns = 0")
+
+
+# register event handlers
+frame.set_mouseclick_handler(mouseclick)
+frame.set_draw_handler(draw)
+
+
+# get things rolling
+new_game()
+frame.start()
+
+
+# Always remember to review the grading rubric
